@@ -34,8 +34,20 @@ export const handleChat = async (req: Request): Promise<Response> => {
             );
         }
 
-        // Default to a free model on OpenRouter, or allow overriding via the request
-        const modelToUse = body.model || "google/gemma-3-4b-it:free";
+        // Banco de modelos gratuitos comprobados en OpenRouter para distribuir la carga.
+        const freeModels = [
+            "google/gemma-3-4b-it:free",
+            "meta-llama/llama-3-8b-instruct:free",
+            "huggingfaceh4/zephyr-7b-beta:free",
+            "mistralai/mistral-7b-instruct:free",
+            "microsoft/phi-3-mini-128k-instruct:free"
+        ];
+        
+        // Seleccionamos uno aleatoriamente para evadir los topes (Rate Limit) de un solo modelo.
+        const randomFallbackModel = freeModels[Math.floor(Math.random() * freeModels.length)];
+        const modelToUse = body.model || randomFallbackModel;
+        
+        console.log(`[API] Modelo asignado o rotado: ${modelToUse}`);
 
         const completion = await openRouter.chat.send({
             chatGenerationParams: {

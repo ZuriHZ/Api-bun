@@ -160,6 +160,14 @@
         button:hover { color: var(--accent); }
         button:disabled { color: var(--stone); cursor: not-allowed; }
 
+        button#stop-button {
+            display: none;
+            color: var(--accent);
+        }
+        button#stop-button:hover {
+            color: var(--ink);
+        }
+
         .typing-indicator {
             display: inline-block;
             width: 8px;
@@ -211,6 +219,7 @@
         <form id="chat-form">
             <input type="text" id="message-input" placeholder="Compose thought..." autocomplete="off" required>
             <button type="submit" id="send-button">Ask</button>
+            <button type="button" id="stop-button">Stop</button>
         </form>
     </footer>
 
@@ -219,6 +228,16 @@
         const input = document.getElementById('message-input');
         const chatBox = document.getElementById('chat-box');
         const sendBtn = document.getElementById('send-button');
+        const stopBtn = document.getElementById('stop-button');
+
+        let abortController = null;
+        let isUserScrolling = false;
+
+        // Detects if user scrolled up manually to pause auto-scroll
+        window.addEventListener('scroll', () => {
+            const isAtBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 50;
+            isUserScrolling = !isAtBottom;
+        });
 
         function createEntry(role, initialText = '') {
             const entry = document.createElement('div');
@@ -236,12 +255,22 @@
             entry.appendChild(content);
             chatBox.appendChild(entry);
             
-            // Scroll to bottom
-            const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            // Scroll to bottom only if user hasn't scrolled up
+            const scrollToBottom = () => {
+                if (!isUserScrolling) {
+                    window.scrollTo({ top: document.body.scrollHeight });
+                }
+            };
             scrollToBottom();
             
             return { content, scrollToBottom };
         }
+
+        stopBtn.addEventListener('click', () => {
+            if (abortController) {
+                abortController.abort();
+            }
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -250,7 +279,8 @@
 
             input.value = '';
             input.disabled = true;
-            sendBtn.disabled = true;
+            sendBtn.style.display = 'none';
+            stopBtn.style.display = 'block';
 
             createEntry('user', text);
 
@@ -259,11 +289,15 @@
             indicator.className = 'typing-indicator';
             aiContent.appendChild(indicator);
 
+            abortController = new AbortController();
+            isUserScrolling = false; // Reset to start autoscrolling again
+
             try {
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
+                    body: JSON.stringify({ message: text }),
+                    signal: abortController.signal
                 });
 
                 if (!response.ok) throw new Error('Communication failed.');
@@ -285,11 +319,18 @@
 
             } catch (err) {
                 if (aiContent.contains(indicator)) aiContent.removeChild(indicator);
-                aiContent.textContent = "Error: Connection severed.";
-                aiContent.style.color = "var(--accent)";
+                if (err.name === 'AbortError') {
+                    aiContent.textContent += " [Interrupted]";
+                    aiContent.style.color = "var(--stone)";
+                } else {
+                    aiContent.textContent = "Error: Connection severed.";
+                    aiContent.style.color = "var(--accent)";
+                }
             } finally {
                 input.disabled = false;
-                sendBtn.disabled = false;
+                sendBtn.style.display = 'block';
+                stopBtn.style.display = 'none';
+                abortController = null;
                 input.focus();
             }
         });
