@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REST Tester.</title>
+    <title>REST Tester Extendido.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,6 +14,7 @@
             --stone: #78756c;
             --accent: #d23a27;
             --code-bg: #e6e3da;
+            --border-light: #d1cdc1;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,15 +37,29 @@
             letter-spacing: -0.02em;
         }
 
+        h2 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--stone);
+            font-weight: normal;
+        }
+
         .container {
             max-width: 900px;
             margin: 0 auto;
         }
 
+        .section {
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            margin-bottom: 2rem;
+            background: rgba(255,255,255,0.3);
+        }
+
         .controls {
             display: flex;
             gap: 1rem;
-            margin-bottom: 2rem;
             flex-wrap: wrap;
         }
 
@@ -53,11 +68,11 @@
             border: 1px solid var(--ink);
             color: var(--ink);
             font-family: inherit;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            padding: 0.75rem 1.5rem;
+            padding: 0.75rem 1.25rem;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -78,6 +93,7 @@
             max-height: 600px;
             overflow-y: auto;
             border-left: 4px solid var(--accent);
+            margin-top: 2rem;
         }
         
         .header-link {
@@ -96,51 +112,84 @@
 <body>
     <div class="container">
         <a href="/" class="header-link">← Volver al Chat</a>
-        <h1>REST Tester.</h1>
+        <h1>REST Tester Extendido.</h1>
+        <p style="margin-bottom: 3rem;">Explora las relaciones completas de la Base de Datos.</p>
         
-        <div class="controls">
-            <button onclick="testGET()">GET /api/messages</button>
-            <button onclick="testPOST()">POST (Crear Mensaje de Prueba)</button>
-            <button onclick="testDELETE()">DELETE (Último Test)</button>
-            <button onclick="clearResponse()" style="border-color: var(--stone); color: var(--stone);">Limpiar Terminal</button>
+        <div class="section">
+            <h2>👤 Users</h2>
+            <div class="controls">
+                <button onclick="testAPI('GET', '/api/users', 'user')">GET All</button>
+                <button onclick="testAPI('POST', '/api/users', 'user')">POST (Crear Dummy)</button>
+                <button onclick="deleteLast('user', '/api/users/')">DELETE (Último Creado)</button>
+            </div>
         </div>
+
+        <div class="section">
+            <h2>💬 Conversations</h2>
+            <div class="controls">
+                <button onclick="testAPI('GET', '/api/conversations', 'convo')">GET All</button>
+                <button onclick="testAPI('POST', '/api/conversations', 'convo')">POST (Crear Dummy)</button>
+                <button onclick="deleteLast('convo', '/api/conversations/')">DELETE (Última Creada)</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>✉️ Messages</h2>
+            <div class="controls">
+                <button onclick="testAPI('GET', '/api/messages', 'msg')">GET All</button>
+                <button onclick="testPOSTMessage()">POST (Mensaje Aleatorio)</button>
+                <button onclick="testGETMessageById()">GET (Por ID Último)</button>
+                <button onclick="deleteLast('msg', '/api/messages/')">DELETE (Último)</button>
+            </div>
+        </div>
+
+        <button onclick="clearResponse()" style="border-color: var(--accent); color: var(--accent); margin-bottom: 2rem;">Limpiar Terminal</button>
 
         <div class="result-box" id="result">Awaiting Execution...</div>
     </div>
 
     <script>
         const resultBox = document.getElementById('result');
-        let lastMessageId = null;
+        
+        // Memoria local de IDs creados por categoria para facilitar la prueba
+        const state = {
+            user: null,
+            convo: null,
+            msg: null
+        };
 
-        function logResult(method, url, status, data) {
+        function logResult(method, url, status, data, type = null) {
             const time = new Date().toLocaleTimeString();
             const text = `[${time}] ${method} ${url} -> Status: ${status}\n\n${JSON.stringify(data, null, 2)}\n\n`;
             
-            // Clear default message
-            if (resultBox.textContent.trim() === "Awaiting Execution...") {
-                resultBox.textContent = "";
-            }
-
+            if (resultBox.textContent.trim() === "Awaiting Execution...") resultBox.textContent = "";
             resultBox.textContent = text + resultBox.textContent;
             
-            if (data && data.id) {
-                lastMessageId = data.id;
-            } else if (Array.isArray(data) && data.length > 0) {
-                lastMessageId = data[data.length - 1].id;
+            // Actualizar IDs para facilitar el borrado o busquedas precisas
+            if (type !== null) {
+                if (data && data.id) state[type] = data.id;
+                else if (Array.isArray(data) && data.length > 0) state[type] = data[0].id; // Asumimos que el backend devuelve ORDER BY id DESC
             }
         }
 
-        async function testGET() {
+        // Peticion generica GET/POST sin cuerpo (porque en los controllers ya se auto-asigna valores aleatorios para testear)
+        async function testAPI(method, url, stateType) {
             try {
-                const res = await fetch('/api/messages');
-                const data = await res.json();
-                logResult('GET', '/api/messages', res.status, data);
+                const options = { method };
+                const res = await fetch(url, options);
+                
+                // Content puede estar vacio (como DELETE)
+                let data = {};
+                if (res.status !== 204) data = await res.json();
+                
+                logResult(method, url, res.status, data, stateType);
             } catch (err) {
-                logResult('GET', '/api/messages', 'ERROR', err.message);
+                logResult(method, url, 'ERROR', err.message);
             }
         }
 
-        async function testPOST() {
+        // POST Especializado para mensajes porque require un body 'role' y 'content'
+        async function testPOSTMessage() {
             try {
                 const randomStr = Math.random().toString(36).substring(7);
                 const res = await fetch('/api/messages', {
@@ -148,33 +197,45 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         role: 'sys_tester', 
-                        content: `Prueba inyectada desde frontend REST [${randomStr}]` 
+                        content: `Mensaje de test con FKs y nueva DB [${randomStr}]` 
                     })
                 });
                 const data = await res.json();
-                logResult('POST', '/api/messages', res.status, data);
+                logResult('POST', '/api/messages', res.status, data, 'msg');
             } catch (err) {
                 logResult('POST', '/api/messages', 'ERROR', err.message);
             }
         }
 
-        async function testDELETE() {
-            if (!lastMessageId) {
-                const text = `[!] ERROR INTERNO: Necesitas primero hacer un GET o POST exitoso para detectar y "apuntar" qué ID debe borrarse de la Base de Datos.\n\n`;
-                resultBox.textContent = text + resultBox.textContent;
+        // GET Single message by ID
+        async function testGETMessageById() {
+            if (!state.msg) {
+                resultBox.textContent = `[!] Necesitas primero un GET All o POST Messages para registrar qué ID buscar.\n\n` + resultBox.textContent;
                 return;
             }
             try {
-                const res = await fetch(`/api/messages/${lastMessageId}`, {
-                    method: 'DELETE'
-                });
-                
-                // Un código 204 significa 'No Content' (se borró exitosamente)
-                const successMsg = res.ok ? "Elemento destruido limpiamente en la Base de Datos." : "Error destruyendo objeto.";
-                logResult('DELETE', `/api/messages/${lastMessageId}`, res.status, { success: successMsg, id_destroyed: lastMessageId });
-                lastMessageId = null; // Reiniciar
+                const res = await fetch(`/api/messages/${state.msg}`);
+                const data = await res.json();
+                logResult('GET', `/api/messages/${state.msg}`, res.status, data);
             } catch (err) {
-                logResult('DELETE', `/api/messages/${lastMessageId}`, 'ERROR', err.message);
+                logResult('GET', `/api/messages/${state.msg}`, 'ERROR', err.message);
+            }
+        }
+
+        // DELETE Especializado que lee del State
+        async function deleteLast(stateType, urlPrefix) {
+            const currentId = state[stateType];
+            if (!currentId) {
+                resultBox.textContent = `[!] Necesitas primero un GET o POST de esta categoría para seleccionar un ID a borrar.\n\n` + resultBox.textContent;
+                return;
+            }
+            try {
+                const res = await fetch(`${urlPrefix}${currentId}`, { method: 'DELETE' });
+                const successMsg = res.ok ? "DELETED COMPLETELY" : "FAILED deletion";
+                logResult('DELETE', `${urlPrefix}${currentId}`, res.status, { success: successMsg, id: currentId });
+                state[stateType] = null;
+            } catch (err) {
+                logResult('DELETE', `${urlPrefix}${currentId}`, 'ERROR', err.message);
             }
         }
 
