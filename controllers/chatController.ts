@@ -159,7 +159,10 @@ export const handleChat = async (req: Request): Promise<Response> => {
 
         return new Response(randomJoke, {
             status: 200,
-            headers: { "Content-Type": "text/plain; charset=utf-8" },
+            headers: { 
+                "Content-Type": "text/plain; charset=utf-8",
+                "X-AI-Status": "joke" 
+            },
         });
     }
 };

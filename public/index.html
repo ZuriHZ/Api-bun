@@ -429,13 +429,23 @@
                         signal: abortController.signal,
                     });
 
+                    aiContent.removeChild(indicator);
+
+                    // Si el backend nos mandó un chiste (lo detectamos por el header custom)
+                    if (response.headers.get("X-AI-Status") === "joke") {
+                        const jokeText = await response.text();
+                        aiContent.textContent = jokeText;
+                        aiContent.style.color = "var(--accent)";
+                        aiContent.style.fontStyle = "italic";
+                        scrollToBottom();
+                        return;
+                    }
+
                     if (!response.ok) throw new Error("Communication failed.");
 
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
                     let fullText = "";
-
-                    aiContent.removeChild(indicator);
 
                     while (true) {
                         const { done, value } = await reader.read();
@@ -448,6 +458,7 @@
                 } catch (err) {
                     if (aiContent.contains(indicator))
                         aiContent.removeChild(indicator);
+                    
                     if (err.name === "AbortError") {
                         aiContent.textContent += " [Interrupted]";
                         aiContent.style.color = "var(--stone)";
