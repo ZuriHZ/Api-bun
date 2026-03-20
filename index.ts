@@ -14,6 +14,10 @@ const server = Bun.serve({
     if (url.pathname === "/" && req.method === "GET") {
       return new Response(Bun.file("./public/index.html"));
     }
+
+    if (url.pathname === "/rest" && req.method === "GET") {
+      return new Response(Bun.file("./public/rest-test.html"));
+    }
     
     if (url.pathname === "/health" && req.method === "GET") {
       return new Response(JSON.stringify({ status: "ok", message: "Health check passed" }), {

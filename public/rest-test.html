@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REST Tester.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #f2efe9;
+            --ink: #1a1a19;
+            --stone: #78756c;
+            --accent: #d23a27;
+            --code-bg: #e6e3da;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--paper);
+            color: var(--ink);
+            font-family: 'Manrope', system-ui, sans-serif;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            padding: 3rem clamp(1.5rem, 6vw, 8rem);
+        }
+
+        h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 400;
+            line-height: 0.9;
+            margin-bottom: 2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--ink);
+            color: var(--ink);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .result-box {
+            background: var(--code-bg);
+            padding: 2rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            min-height: 300px;
+            max-height: 600px;
+            overflow-y: auto;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .header-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            font-family: 'Instrument Serif', serif;
+            font-style: italic;
+            font-size: 1.5rem;
+            color: var(--stone);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .header-link:hover { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="header-link">← Volver al Chat</a>
+        <h1>REST Tester.</h1>
+        
+        <div class="controls">
+            <button onclick="testGET()">GET /api/messages</button>
+            <button onclick="testPOST()">POST (Crear Mensaje de Prueba)</button>
+            <button onclick="testDELETE()">DELETE (Último Test)</button>
+            <button onclick="clearResponse()" style="border-color: var(--stone); color: var(--stone);">Limpiar Terminal</button>
+        </div>
+
+        <div class="result-box" id="result">Awaiting Execution...</div>
+    </div>
+
+    <script>
+        const resultBox = document.getElementById('result');
+        let lastMessageId = null;
+
+        function logResult(method, url, status, data) {
+            const time = new Date().toLocaleTimeString();
+            const text = `[${time}] ${method} ${url} -> Status: ${status}\n\n${JSON.stringify(data, null, 2)}\n\n`;
+            
+            // Clear default message
+            if (resultBox.textContent.trim() === "Awaiting Execution...") {
+                resultBox.textContent = "";
+            }
+
+            resultBox.textContent = text + resultBox.textContent;
+            
+            if (data && data.id) {
+                lastMessageId = data.id;
+            } else if (Array.isArray(data) && data.length > 0) {
+                lastMessageId = data[data.length - 1].id;
+            }
+        }
+
+        async function testGET() {
+            try {
+                const res = await fetch('/api/messages');
+                const data = await res.json();
+                logResult('GET', '/api/messages', res.status, data);
+            } catch (err) {
+                logResult('GET', '/api/messages', 'ERROR', err.message);
+            }
+        }
+
+        async function testPOST() {
+            try {
+                const randomStr = Math.random().toString(36).substring(7);
+                const res = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        role: 'sys_tester', 
+                        content: `Prueba inyectada desde frontend REST [${randomStr}]` 
+                    })
+                });
+                const data = await res.json();
+                logResult('POST', '/api/messages', res.status, data);
+            } catch (err) {
+                logResult('POST', '/api/messages', 'ERROR', err.message);
+            }
+        }
+
+        async function testDELETE() {
+            if (!lastMessageId) {
+                const text = `[!] ERROR INTERNO: Necesitas primero hacer un GET o POST exitoso para detectar y "apuntar" qué ID debe borrarse de la Base de Datos.\n\n`;
+                resultBox.textContent = text + resultBox.textContent;
+                return;
+            }
+            try {
+                const res = await fetch(`/api/messages/${lastMessageId}`, {
+                    method: 'DELETE'
+                });
+                
+                // Un código 204 significa 'No Content' (se borró exitosamente)
+                const successMsg = res.ok ? "Elemento destruido limpiamente en la Base de Datos." : "Error destruyendo objeto.";
+                logResult('DELETE', `/api/messages/${lastMessageId}`, res.status, { success: successMsg, id_destroyed: lastMessageId });
+                lastMessageId = null; // Reiniciar
+            } catch (err) {
+                logResult('DELETE', `/api/messages/${lastMessageId}`, 'ERROR', err.message);
+            }
+        }
+
+        function clearResponse() {
+            resultBox.textContent = "Awaiting Execution...";
+        }
+    </script>
+</body>
+</html>

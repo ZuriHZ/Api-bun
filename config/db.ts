@@ -1,24 +1,23 @@
 import { SQL } from "bun";
 
-// Lee la variable de entorno o usa una base de prueba default
-const dbUrl = process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/apibun_db";
+// Lee la variable de entorno y por defecto la apuntamos a SQLite para pruebas ultra fáciles
+const dbUrl = process.env.DATABASE_URL;
 
-export const sql = new SQL(dbUrl);
+export const sql = new SQL(dbUrl!);
 
-// Función ultra rápida para asegurar que la tabla del historial exista cada vez que inicie el servidor
+// Función ultra rápida para asegurar que la tabla exista
 export async function initDB() {
     try {
         await sql`
             CREATE TABLE IF NOT EXISTS chat_messages (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 role VARCHAR(255) NOT NULL,
                 content TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `;
-        console.log("[DB] Tabla chat_messages verificada correctamente (PostgreSQL Nativo).");
+        console.log("[DB] ✅ Conectado exitosamente. Tablas generadas con Bun SQL nativo.");
     } catch (error: any) {
-        console.error("[DB Error] No se pudo conectar a PostgreSQL.", error.message);
-        console.warn("Asegúrate de tener corriendo tu servidor postgres y configurar DATABASE_URL en tu .env");
+        console.error("[DB Error] Error inicializando tablas:", error.message);
     }
 }
