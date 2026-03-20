@@ -1,7 +1,13 @@
+import { handleChat } from "./controllers/chatController";
+
 const server = Bun.serve({
   port: 3000,
-  fetch(req) {
+  async fetch(req) {
     const url = new URL(req.url);
+    
+    if (url.pathname === "/" && req.method === "GET") {
+      return new Response(Bun.file("./public/index.html"));
+    }
     
     if (url.pathname === "/health" && req.method === "GET") {
       return new Response(JSON.stringify({ status: "ok", message: "Health check passed" }), {
@@ -10,6 +16,10 @@ const server = Bun.serve({
           "Content-Type": "application/json",
         },
       });
+    }
+
+    if (url.pathname === "/chat" && req.method === "POST") {
+      return await handleChat(req);
     }
 
     return new Response("Not Found", { status: 404 });

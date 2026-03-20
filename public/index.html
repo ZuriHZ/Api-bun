@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dialogue.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Editorial, print-inspired palette */
+            --paper: #f2efe9;
+            --ink: #1a1a19;
+            --stone: #78756c;
+            --accent: #d23a27;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--paper);
+            color: var(--ink);
+            font-family: 'Manrope', system-ui, sans-serif;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            padding: 3rem clamp(1.5rem, 6vw, 8rem);
+            gap: 3rem;
+        }
+
+        /* Typography */
+        h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(4rem, 10vw, 7rem);
+            font-weight: 400;
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--stone);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        header {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Chat Layout */
+        main {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            overflow-y: auto;
+            padding-bottom: 4rem;
+        }
+
+        /* Minimalist Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--stone); }
+
+        .entry {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 2rem;
+            align-items: baseline;
+            opacity: 0;
+            animation: emerge 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .entry.user .speaker { color: var(--stone); }
+        .entry.ai .speaker { color: var(--accent); font-family: 'Instrument Serif', serif; font-size: 1.5rem; font-style: italic; text-transform: none; letter-spacing: 0; }
+
+        .speaker {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            text-align: right;
+            user-select: none;
+        }
+
+        .content {
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
+            line-height: 1.6;
+            max-width: 65ch;
+            white-space: pre-wrap;
+        }
+
+        /* Input Area */
+        footer {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            position: sticky;
+            bottom: 0;
+            background: linear-gradient(to top, var(--paper) 80%, transparent);
+            padding-top: 3rem;
+            padding-bottom: 1rem;
+        }
+
+        form {
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            border-bottom: 1px solid var(--ink);
+            padding-bottom: 0.5rem;
+            transition: border-color 0.4s ease;
+        }
+
+        form:focus-within {
+            border-bottom-color: var(--accent);
+        }
+
+        input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--ink);
+            font-family: inherit;
+            font-size: 1.25rem;
+            padding: 0;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: var(--stone);
+            font-style: italic;
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
+        }
+
+        button {
+            background: transparent;
+            border: none;
+            color: var(--ink);
+            font-family: 'Instrument Serif', serif;
+            font-size: 2rem;
+            font-style: italic;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        button:hover { color: var(--accent); }
+        button:disabled { color: var(--stone); cursor: not-allowed; }
+
+        .typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes emerge {
+            from { transform: translateY(15px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        ::selection {
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .entry { grid-template-columns: 1fr; gap: 0.25rem; }
+            .speaker { text-align: left; }
+            body { padding: 2rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="subtitle">System 01</div>
+        <h1>Dialogue.</h1>
+    </header>
+
+    <main id="chat-box">
+        <div class="entry ai">
+            <div class="speaker">System</div>
+            <div class="content">Awaiting your inquiry. Type something below to begin the exchange.</div>
+        </div>
+    </main>
+
+    <footer>
+        <form id="chat-form">
+            <input type="text" id="message-input" placeholder="Compose thought..." autocomplete="off" required>
+            <button type="submit" id="send-button">Ask</button>
+        </form>
+    </footer>
+
+    <script>
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('message-input');
+        const chatBox = document.getElementById('chat-box');
+        const sendBtn = document.getElementById('send-button');
+
+        function createEntry(role, initialText = '') {
+            const entry = document.createElement('div');
+            entry.className = `entry ${role}`;
+            
+            const speaker = document.createElement('div');
+            speaker.className = 'speaker';
+            speaker.textContent = role === 'ai' ? 'System' : 'You';
+            
+            const content = document.createElement('div');
+            content.className = 'content';
+            content.textContent = initialText;
+
+            entry.appendChild(speaker);
+            entry.appendChild(content);
+            chatBox.appendChild(entry);
+            
+            // Scroll to bottom
+            const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            scrollToBottom();
+            
+            return { content, scrollToBottom };
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            createEntry('user', text);
+
+            const { content: aiContent, scrollToBottom } = createEntry('ai', '');
+            const indicator = document.createElement('span');
+            indicator.className = 'typing-indicator';
+            aiContent.appendChild(indicator);
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+
+                if (!response.ok) throw new Error('Communication failed.');
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = '';
+                
+                aiContent.removeChild(indicator);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    fullText += decoder.decode(value);
+                    aiContent.textContent = fullText;
+                    scrollToBottom();
+                }
+
+            } catch (err) {
+                if (aiContent.contains(indicator)) aiContent.removeChild(indicator);
+                aiContent.textContent = "Error: Connection severed.";
+                aiContent.style.color = "var(--accent)";
+            } finally {
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        });
+    </script>
+</body>
+</html>
