@@ -1,5 +1,6 @@
 import { OpenRouter } from "@openrouter/sdk";
 import { AVAILABLE_MODELS } from "../config/models";
+import { sql } from "../config/db";
 
 // Initialize the OpenRouter SDK
 const openRouter = new OpenRouter({
@@ -40,6 +41,13 @@ export const handleChat = async (req: Request): Promise<Response> => {
             );
         }
 
+        // Guardamos el mensaje del usuario al instante en la base de datos local
+        try {
+            await sql`INSERT INTO chat_messages (role, content) VALUES ('user', ${userMessage})`;
+        } catch (dbErr: any) {
+            console.error("[DB] Error al guardar mensaje de usuario:", dbErr.message);
+        }
+
         // Array de IDs de modelos configurados centralmente en config/models.ts
         const freeModels = AVAILABLE_MODELS.map(m => m.id);
 
@@ -49,7 +57,7 @@ export const handleChat = async (req: Request): Promise<Response> => {
         let finalError: any = null;
 
         // Si falla un modelo (p.ej. fue retirado y da 404), reintentamos hasta 3 veces con otro
-        while (attempts < 3) {
+        while (attempts < 5) {
             modelToUse =
                 body.model ||
                 freeModels[Math.floor(Math.random() * freeModels.length)];
@@ -90,18 +98,30 @@ export const handleChat = async (req: Request): Promise<Response> => {
         const stream = new ReadableStream({
             async start(controller) {
                 try {
+                    let fullAiResponse = "";
                     // completion es un EventStream, lo recorremos asíncronamente
                     for await (const chunk of completion as any) {
                         // Extraemos la parte de texto de cada "trocito"
                         const content =
                             chunk.choices?.[0]?.delta?.content || "";
                         if (content) {
+                            fullAiResponse += content;
                             // Codificamos y enviamos el trocito al cliente
                             controller.enqueue(
                                 new TextEncoder().encode(content),
                             );
                         }
                     }
+                    
+                    // Al terminar de streamear, guardamos la respuesta entera de la IA en DB
+                    try {
+                        if (fullAiResponse.trim()) {
+                            await sql`INSERT INTO chat_messages (role, content) VALUES ('ai', ${fullAiResponse})`;
+                        }
+                    } catch (dbErr: any) {
+                        console.error("[DB] Error al guardar respuesta de IA:", dbErr.message);
+                    }
+
                     controller.close();
                 } catch (error) {
                     console.error("Error en streaming:", error);
