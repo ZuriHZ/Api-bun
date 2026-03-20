@@ -45,11 +45,14 @@ export const handleChat = async (req: Request): Promise<Response> => {
         try {
             await sql`INSERT INTO chat_messages (role, content) VALUES ('user', ${userMessage})`;
         } catch (dbErr: any) {
-            console.error("[DB] Error al guardar mensaje de usuario:", dbErr.message);
+            console.error(
+                "[DB] Error al guardar mensaje de usuario:",
+                dbErr.message,
+            );
         }
 
         // Array de IDs de modelos configurados centralmente en config/models.ts
-        const freeModels = AVAILABLE_MODELS.map(m => m.id);
+        const freeModels = AVAILABLE_MODELS.map((m) => m.id);
 
         let completion;
         let modelToUse = body.model;
@@ -57,7 +60,7 @@ export const handleChat = async (req: Request): Promise<Response> => {
         let finalError: any = null;
 
         // Si falla un modelo (p.ej. fue retirado y da 404), reintentamos hasta 3 veces con otro
-        while (attempts < 5) {
+        while (attempts < 10) {
             modelToUse =
                 body.model ||
                 freeModels[Math.floor(Math.random() * freeModels.length)];
@@ -112,14 +115,17 @@ export const handleChat = async (req: Request): Promise<Response> => {
                             );
                         }
                     }
-                    
+
                     // Al terminar de streamear, guardamos la respuesta entera de la IA en DB
                     try {
                         if (fullAiResponse.trim()) {
                             await sql`INSERT INTO chat_messages (role, content) VALUES ('ai', ${fullAiResponse})`;
                         }
                     } catch (dbErr: any) {
-                        console.error("[DB] Error al guardar respuesta de IA:", dbErr.message);
+                        console.error(
+                            "[DB] Error al guardar respuesta de IA:",
+                            dbErr.message,
+                        );
                     }
 
                     controller.close();
@@ -140,12 +146,20 @@ export const handleChat = async (req: Request): Promise<Response> => {
         });
     } catch (error: any) {
         console.error("Error during chat request:", error);
-        return new Response(
-            JSON.stringify({
-                error: "Internal Server Error",
-                details: error.message,
-            }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-        );
+
+        // En lugar de un error frío, devolvemos un chiste si los modelos fallan
+        const jokes = [
+            "Parece que la IA se tomó un descanso para tomar café... y no vuelve. ¿Por qué los programadores odian la naturaleza? Porque tiene demasiados bugs.",
+            "¡Ups! Todas las IAs están en huelga. Dicen que quieren mejores procesadores. ¿Qué es un terapeuta? 1024 gigapeutas.",
+            "La señal se perdió en el ciberespacio. Los modelos gratuitos están dormidos. ¿Qué le dice un GIF a un JPG? '¡Anímate hombre!'",
+            "Houston, tenemos un problema. Las IAs no responden. ¿Cómo se despiden los programadores? '¡C-sharp!'",
+            "Error 404: Cerebro artificial no encontrado. Intenta de nuevo. ¿Qué es un objeto? Una instancia de una clase que se porta mal.",
+        ];
+        const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+
+        return new Response(randomJoke, {
+            status: 200,
+            headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
     }
 };
