@@ -1,4 +1,5 @@
 import { handleChat } from "./controllers/chatController";
+import { AVAILABLE_MODELS } from "./config/models";
 
 const server = Bun.serve({
   port: 3000,
@@ -11,6 +12,15 @@ const server = Bun.serve({
     
     if (url.pathname === "/health" && req.method === "GET") {
       return new Response(JSON.stringify({ status: "ok", message: "Health check passed" }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
+
+    if (url.pathname === "/models" && req.method === "GET") {
+      return new Response(JSON.stringify(AVAILABLE_MODELS), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
