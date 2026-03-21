@@ -59,8 +59,8 @@ export const handleChat = async (req: Request): Promise<Response> => {
         let attempts = 0;
         let finalError: any = null;
 
-        // Si falla un modelo (p.ej. fue retirado y da 404), reintentamos hasta 3 veces con otro
-        while (attempts < 10) {
+        // Si falla un modelo (p.ej. fue retirado y da 404), reintentamos hasta 15 veces con otro
+        while (attempts < 15) {
             modelToUse =
                 body.model ||
                 freeModels[Math.floor(Math.random() * freeModels.length)];
@@ -159,9 +159,9 @@ export const handleChat = async (req: Request): Promise<Response> => {
 
         return new Response(randomJoke, {
             status: 200,
-            headers: { 
+            headers: {
                 "Content-Type": "text/plain; charset=utf-8",
-                "X-AI-Status": "joke" 
+                "X-AI-Status": "joke",
             },
         });
     }

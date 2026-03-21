@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REST Tester Extendido.</title>
+    <title>REST Tester — Api-Bun</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
@@ -13,53 +13,143 @@
             --ink: #1a1a19;
             --stone: #78756c;
             --accent: #d23a27;
-            --code-bg: #e6e3da;
+            --code-bg: #1a1a19;
+            --code-fg: #e0ddd4;
             --border-light: #d1cdc1;
+            --card-bg: rgba(255,255,255,0.45);
+            --green: #2d8a56;
+            --blue: #3a6dd2;
+            --yellow: #c7942a;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             background-color: var(--paper);
             color: var(--ink);
             font-family: 'Manrope', system-ui, sans-serif;
-            font-size: 1.125rem;
-            line-height: 1.6;
-            padding: 3rem clamp(1.5rem, 6vw, 8rem);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
         }
 
-        h1 {
+        /* ── Top Bar ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            flex-shrink: 0;
+            background: var(--paper);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-link {
             font-family: 'Instrument Serif', serif;
-            font-size: clamp(3rem, 8vw, 5rem);
+            font-style: italic;
+            font-size: 1.1rem;
+            color: var(--stone);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .header-link:hover { color: var(--accent); }
+
+        .topbar h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
             font-weight: 400;
-            line-height: 0.9;
-            margin-bottom: 2rem;
             letter-spacing: -0.02em;
         }
 
-        h2 {
-            font-family: 'Instrument Serif', serif;
-            font-size: 2rem;
-            margin-bottom: 1rem;
+        .topbar-subtitle {
             color: var(--stone);
-            font-weight: normal;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
+        .btn-clear {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-family: inherit;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.4rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-clear:hover {
+            background: var(--accent);
+            color: var(--paper);
+        }
+
+        /* ── Main Layout ── */
+        .layout {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* ── Sidebar (Controls) ── */
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-light);
+            padding: 1rem 1.25rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
 
         .section {
-            padding: 1.5rem;
+            padding: 0.85rem 1rem;
             border: 1px solid var(--border-light);
-            margin-bottom: 2rem;
-            background: rgba(255,255,255,0.3);
+            background: var(--card-bg);
+            transition: border-color 0.2s ease;
+        }
+        .section:hover {
+            border-color: var(--stone);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .section-icon {
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .section h2 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.15rem;
+            color: var(--ink);
+            font-weight: normal;
         }
 
         .controls {
             display: flex;
-            gap: 1rem;
+            gap: 0.4rem;
             flex-wrap: wrap;
         }
 
@@ -68,127 +158,294 @@
             border: 1px solid var(--ink);
             color: var(--ink);
             font-family: inherit;
-            font-size: 0.75rem;
+            font-size: 0.6rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            padding: 0.75rem 1.25rem;
+            letter-spacing: 0.08em;
+            padding: 0.45rem 0.7rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
-
         button:hover {
             background: var(--ink);
             color: var(--paper);
         }
+        button:active {
+            transform: scale(0.97);
+        }
+
+        .btn-get { border-color: var(--green); color: var(--green); }
+        .btn-get:hover { background: var(--green); color: #fff; }
+
+        .btn-post { border-color: var(--blue); color: var(--blue); }
+        .btn-post:hover { background: var(--blue); color: #fff; }
+
+        .btn-del { border-color: var(--accent); color: var(--accent); }
+        .btn-del:hover { background: var(--accent); color: #fff; }
+
+        /* ── State Indicators ── */
+        .state-row {
+            margin-top: 0.4rem;
+            font-size: 0.65rem;
+            color: var(--stone);
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .state-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border-light);
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+        .state-dot.active {
+            background: var(--green);
+            box-shadow: 0 0 4px rgba(45, 138, 86, 0.4);
+        }
+
+        /* ── Result Panel ── */
+        .result-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: var(--code-bg);
+            flex-shrink: 0;
+        }
+
+        .result-header span {
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--stone);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .result-count {
+            font-family: monospace;
+            font-size: 0.65rem;
+            color: var(--stone);
+            opacity: 0.7;
+        }
 
         .result-box {
             background: var(--code-bg);
-            padding: 2rem;
-            font-family: monospace;
-            font-size: 0.85rem;
+            color: var(--code-fg);
+            padding: 1.25rem;
+            font-family: 'Menlo', 'Consolas', monospace;
+            font-size: 0.75rem;
             white-space: pre-wrap;
-            overflow-x: auto;
-            min-height: 300px;
-            max-height: 600px;
+            word-break: break-all;
             overflow-y: auto;
-            border-left: 4px solid var(--accent);
-            margin-top: 2rem;
+            flex: 1;
+            line-height: 1.65;
         }
-        
-        .header-link {
-            display: inline-block;
-            margin-bottom: 2rem;
-            font-family: 'Instrument Serif', serif;
-            font-style: italic;
-            font-size: 1.5rem;
+
+        .result-box .log-entry {
+            padding-bottom: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255, 0.06);
+        }
+        .result-box .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time { color: var(--stone); }
+        .log-method-get { color: #5ec482; }
+        .log-method-post { color: #6fa8f5; }
+        .log-method-delete { color: #f07067; }
+        .log-status { color: var(--yellow); }
+        .log-url { color: #b8b4aa; }
+
+        /* ── Placeholder state ── */
+        .result-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            background: var(--code-bg);
             color: var(--stone);
-            text-decoration: none;
-            transition: color 0.3s ease;
+            font-family: monospace;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            user-select: none;
         }
-        .header-link:hover { color: var(--accent); }
+
+        /* ── Scrollbar styling ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+        .result-box::-webkit-scrollbar-thumb { background: #333; }
+
+        /* ── Loading pulse ── */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .loading { animation: pulse 0.8s ease-in-out; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="/" class="header-link">⮜ Volver al Chat</a>
-        <h1>REST Tester Extendido.</h1>
-        <p style="margin-bottom: 3rem;">Explora las relaciones completas de la Base de Datos.</p>
-        
-        <div class="section">
-            <h2>👤 Users</h2>
-            <div class="controls">
-                <button onclick="testAPI('GET', '/api/users', 'user')">GET All</button>
-                <button onclick="testAPI('POST', '/api/users', 'user')">POST (Crear Dummy)</button>
-                <button onclick="deleteLast('user', '/api/users/')">DELETE (Último Creado)</button>
+    <!-- ── Top Bar ── -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="/" class="header-link">⮜ Chat</a>
+            <h1>REST TESTER</h1>
+            <span class="topbar-subtitle">Base de Datos</span>
+        </div>
+        <button class="btn-clear" onclick="clearResponse()">⌫ Limpiar Terminal</button>
+    </div>
+
+    <!-- ── Main Layout ── -->
+    <div class="layout">
+        <!-- ── Sidebar: Controls ── -->
+        <div class="sidebar">
+            <div class="section" id="section-user">
+                <div class="section-header">
+                    <span class="section-icon">👤</span>
+                    <h2>Users</h2>
+                </div>
+                <div class="controls">
+                    <button class="btn-get" onclick="testAPI('GET', '/api/users', 'user')">GET All</button>
+                    <button class="btn-post" onclick="testAPI('POST', '/api/users', 'user')">POST Dummy</button>
+                    <button class="btn-del" onclick="deleteLast('user', '/api/users/')">DEL Último</button>
+                </div>
+                <div class="state-row">
+                    <span class="state-dot" id="dot-user"></span>
+                    <span id="state-user">sin id activo</span>
+                </div>
+            </div>
+
+            <div class="section" id="section-convo">
+                <div class="section-header">
+                    <span class="section-icon">💬</span>
+                    <h2>Conversations</h2>
+                </div>
+                <div class="controls">
+                    <button class="btn-get" onclick="testAPI('GET', '/api/conversations', 'convo')">GET All</button>
+                    <button class="btn-post" onclick="testAPI('POST', '/api/conversations', 'convo')">POST Dummy</button>
+                    <button class="btn-del" onclick="deleteLast('convo', '/api/conversations/')">DEL Última</button>
+                </div>
+                <div class="state-row">
+                    <span class="state-dot" id="dot-convo"></span>
+                    <span id="state-convo">sin id activo</span>
+                </div>
+            </div>
+
+            <div class="section" id="section-msg">
+                <div class="section-header">
+                    <span class="section-icon">✉️</span>
+                    <h2>Messages</h2>
+                </div>
+                <div class="controls">
+                    <button class="btn-get" onclick="testAPI('GET', '/api/messages', 'msg')">GET All</button>
+                    <button class="btn-post" onclick="testPOSTMessage()">POST Random</button>
+                    <button class="btn-get" onclick="testGETMessageById()">GET by ID</button>
+                    <button class="btn-del" onclick="deleteLast('msg', '/api/messages/')">DEL Último</button>
+                </div>
+                <div class="state-row">
+                    <span class="state-dot" id="dot-msg"></span>
+                    <span id="state-msg">sin id activo</span>
+                </div>
             </div>
         </div>
 
-        <div class="section">
-            <h2>💬 Conversations</h2>
-            <div class="controls">
-                <button onclick="testAPI('GET', '/api/conversations', 'convo')">GET All</button>
-                <button onclick="testAPI('POST', '/api/conversations', 'convo')">POST (Crear Dummy)</button>
-                <button onclick="deleteLast('convo', '/api/conversations/')">DELETE (Última Creada)</button>
+        <!-- ── Result Panel ── -->
+        <div class="result-panel">
+            <div class="result-header">
+                <span>⬤ Output</span>
+                <span class="result-count" id="log-count">0 entradas</span>
             </div>
+            <div class="result-box" id="result"></div>
+            <div class="result-empty" id="result-empty">Esperando ejecución…</div>
         </div>
-
-        <div class="section">
-            <h2>✉️ Messages</h2>
-            <div class="controls">
-                <button onclick="testAPI('GET', '/api/messages', 'msg')">GET All</button>
-                <button onclick="testPOSTMessage()">POST (Mensaje Aleatorio)</button>
-                <button onclick="testGETMessageById()">GET (Por ID Último)</button>
-                <button onclick="deleteLast('msg', '/api/messages/')">DELETE (Último)</button>
-            </div>
-        </div>
-
-        <button onclick="clearResponse()" style="border-color: var(--accent); color: var(--accent); margin-bottom: 2rem;">Limpiar Terminal</button>
-
-        <div class="result-box" id="result">Awaiting Execution...</div>
     </div>
 
     <script>
         const resultBox = document.getElementById('result');
+        const resultEmpty = document.getElementById('result-empty');
+        const logCountEl = document.getElementById('log-count');
+        let logCount = 0;
         
-        // Memoria local de IDs creados por categoria para facilitar la prueba
-        const state = {
-            user: null,
-            convo: null,
-            msg: null
-        };
+        // Memoria local de IDs creados por categoria
+        const state = { user: null, convo: null, msg: null };
 
-        function logResult(method, url, status, data, type = null) {
-            const time = new Date().toLocaleTimeString();
-            const text = `[${time}] ${method} ${url} -> Status: ${status}\n\n${JSON.stringify(data, null, 2)}\n\n`;
-            
-            if (resultBox.textContent.trim() === "Awaiting Execution...") resultBox.textContent = "";
-            resultBox.textContent = text + resultBox.textContent;
-            
-            // Actualizar IDs para facilitar el borrado o busquedas precisas
-            if (type !== null) {
-                if (data && data.id) state[type] = data.id;
-                else if (Array.isArray(data) && data.length > 0) state[type] = data[0].id; // Asumimos que el backend devuelve ORDER BY id DESC
+        function updateStateUI(type) {
+            const dot = document.getElementById(`dot-${type}`);
+            const label = document.getElementById(`state-${type}`);
+            if (state[type]) {
+                dot.classList.add('active');
+                label.textContent = `id: ${state[type]}`;
+            } else {
+                dot.classList.remove('active');
+                label.textContent = 'sin id activo';
             }
         }
 
-        // Peticion generica GET/POST sin cuerpo (porque en los controllers ya se auto-asigna valores aleatorios para testear)
+        function methodClass(method) {
+            if (method === 'GET') return 'log-method-get';
+            if (method === 'POST') return 'log-method-post';
+            return 'log-method-delete';
+        }
+
+        function logResult(method, url, status, data, type = null) {
+            logCount++;
+            const time = new Date().toLocaleTimeString();
+            
+            // Build semantic HTML entry
+            const entry = document.createElement('div');
+            entry.className = 'log-entry loading';
+            
+            const header = `<span class="log-time">${time}</span>  <span class="${methodClass(method)}">${method}</span>  <span class="log-url">${url}</span>  → <span class="log-status">${status}</span>`;
+            const body = JSON.stringify(data, null, 2);
+            
+            entry.innerHTML = header + '\n' + body;
+
+            // Hide placeholder
+            resultEmpty.style.display = 'none';
+            resultBox.style.display = 'block';
+
+            // Prepend
+            resultBox.insertBefore(entry, resultBox.firstChild);
+
+            // Remove animation after it plays
+            setTimeout(() => entry.classList.remove('loading'), 800);
+
+            // Update counter
+            logCountEl.textContent = `${logCount} entrada${logCount !== 1 ? 's' : ''}`;
+            
+            // Update state
+            if (type !== null) {
+                if (data && data.id) state[type] = data.id;
+                else if (Array.isArray(data) && data.length > 0) state[type] = data[0].id;
+                updateStateUI(type);
+            }
+        }
+
+        // Generic GET/POST
         async function testAPI(method, url, stateType) {
             try {
-                const options = { method };
-                const res = await fetch(url, options);
-                
-                // Content puede estar vacio (como DELETE)
+                const res = await fetch(url, { method });
                 let data = {};
                 if (res.status !== 204) data = await res.json();
-                
                 logResult(method, url, res.status, data, stateType);
             } catch (err) {
                 logResult(method, url, 'ERROR', err.message);
             }
         }
 
-        // POST Especializado para mensajes porque require un body 'role' y 'content'
+        // POST message with body
         async function testPOSTMessage() {
             try {
                 const randomStr = Math.random().toString(36).substring(7);
@@ -197,7 +454,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         role: 'sys_tester', 
-                        content: `Mensaje de test con FKs y nueva DB [${randomStr}]` 
+                        content: `Mensaje de test [${randomStr}]` 
                     })
                 });
                 const data = await res.json();
@@ -207,10 +464,10 @@
             }
         }
 
-        // GET Single message by ID
+        // GET single message by ID
         async function testGETMessageById() {
             if (!state.msg) {
-                resultBox.textContent = `[!] Necesitas primero un GET All o POST Messages para registrar qué ID buscar.\n\n` + resultBox.textContent;
+                logResult('GET', '/api/messages/?', 'WARN', 'Necesitas primero un GET All o POST para registrar un ID.');
                 return;
             }
             try {
@@ -222,26 +479,34 @@
             }
         }
 
-        // DELETE Especializado que lee del State
+        // DELETE last created entity
         async function deleteLast(stateType, urlPrefix) {
             const currentId = state[stateType];
             if (!currentId) {
-                resultBox.textContent = `[!] Necesitas primero un GET o POST de esta categoría para seleccionar un ID a borrar.\n\n` + resultBox.textContent;
+                logResult('DELETE', urlPrefix + '?', 'WARN', 'Necesitas primero un GET o POST para seleccionar un ID.');
                 return;
             }
             try {
                 const res = await fetch(`${urlPrefix}${currentId}`, { method: 'DELETE' });
-                const successMsg = res.ok ? "DELETED COMPLETELY" : "FAILED deletion";
-                logResult('DELETE', `${urlPrefix}${currentId}`, res.status, { success: successMsg, id: currentId });
+                const successMsg = res.ok ? 'DELETED' : 'FAILED';
+                logResult('DELETE', `${urlPrefix}${currentId}`, res.status, { result: successMsg, id: currentId });
                 state[stateType] = null;
+                updateStateUI(stateType);
             } catch (err) {
                 logResult('DELETE', `${urlPrefix}${currentId}`, 'ERROR', err.message);
             }
         }
 
         function clearResponse() {
-            resultBox.textContent = "Awaiting Execution...";
+            resultBox.innerHTML = '';
+            resultBox.style.display = 'none';
+            resultEmpty.style.display = 'flex';
+            logCount = 0;
+            logCountEl.textContent = '0 entradas';
         }
+
+        // Initial state
+        resultBox.style.display = 'none';
     </script>
 </body>
 </html>
